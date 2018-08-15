@@ -1,0 +1,65 @@
+(ns api.config
+  (:require [environ.core :refer [env]]
+            [share.util :as util]
+            [share.config :as config]))
+
+(def config
+  (let [default-env "dev"
+        environment (or (:env env) default-env)]
+    {:http-port (Integer. (or (:port env) 8001))
+     :ssr-port (Integer. (or (:ssr-port env) 3401))
+     :env environment
+
+     :hikari-spec {:auto-commit        true
+                   :read-only          false
+                   :connection-timeout 30000
+                   :validation-timeout 5000
+                   :idle-timeout       600000
+                   :max-lifetime       1800000
+                   :minimum-idle       10
+                   :maximum-pool-size 48
+                   :pool-name          "db-pool"
+                   :adapter            "postgresql"
+                   :username           (or (:pg-user env) "tienson")
+                   :password           (or (:pg-password env) "123456")
+                   :database-name      "lambdahackers"
+                   :server-name        "localhost"
+                   :port-number        5432
+                   :register-mbeans    false}
+
+     :redis {:pool {
+                    ;; :max-active 8
+                    }
+             :spec {:host "127.0.0.1"
+                    :port 6380
+                    :timeout  4000}}
+
+     :oauth {:github {:app-key (if util/development?
+                                 "613664152acfb4290ab0"
+                                 "1e74fa6483939ef7df90")
+                      :app-secret (if util/development?
+                                    "93edc26ee1883ea9b6e599474e449800da65312b"
+                                    "138d62d7a67fc1409a77e60ce530a3c618263b8d")
+                      :redirect-uri (str config/website "/auth/github")}}
+     :aws {:access-key "AKIAJSMM2I67AQRB5M4Q"
+           :secret-key "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"
+           :endpoint   "us-east-1"}
+
+     :us-east-1 {:access-key "AKIAJSMM2I67AQRB5M4Q"
+                 :secret-key "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"
+                 :endpoint   "us-east-1"}
+
+     :search {:index-path (or (:search-index-path env) "/var/lambdahackers/lucene")}
+
+     :log-path (or (:log-path env) "/var/log/lambdahackers/api.log")
+     :flake-path (or (:flake-path env) "/var/lambdahackers/flake-timestamp-dets")
+     :error-uri (str config/website "/error.html")
+     :img-cdn config/img-cdn
+     :website-uri config/website
+     :imgix-key "G9qUieeu1InIZKhlKanBEKyimQACaGE4"
+     :stripe-secret-key (if util/development?
+                          "sk_test_BkOfFF5l6tCY9mM9vX2xLkKW"
+                          "sk_live_YOq6RPB8lHmSTy95HNs6uvU0")
+     :cookie-secret "b7e1ca3a0ba947cfa1ddfed2224cc96aae6b7c1997674502a6c6630d361ba867"
+     :jwt-secret "bac720e0-8b01-4280-9fd8-b8f06e3fa9b1"
+     :slack-hook "https://hooks.slack.com/services/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"}))
